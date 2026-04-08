@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Packet">
+      <UniqueIdentifier>{3082f0b2-6ed4-4ea1-9515-29961c0271e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{66410785-61dc-4ed9-993d-17cec1b3c899}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOContext.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOSession.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOSessionManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOWorker.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="RWLock.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeRIO.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Buffer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketHandler.cpp">
+      <Filter>Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerManager.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameServer.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerPacketDispatcher.cpp">
+      <Filter>Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerPacketHandler.cpp">
+      <Filter>Packet</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOContext.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOManager.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOSession.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOSessionManager.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOWorker.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="RWLock.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeRIO.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Buffer.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHandler.h">
+      <Filter>Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="IdGenerator.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerManager.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameServer.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerPacketDispatcher.h">
+      <Filter>Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerPacketHandler.h">
+      <Filter>Packet</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

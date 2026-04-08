@@ -1,0 +1,18 @@
+#pragma once
+
+
+enum class PacketId
+{
+	NONE,
+
+	PLAYER_JOIN_REQ,
+	PLAYER_JOIN_RES,
+
+	PLAYER_LEAVE_REQ,
+	PLAYER_LEAVE_RES,
+
+	PLAYER_INPUT_REQ,
+	PLAYER_STATE_RES,
+
+	PACKET_MAX,
+};
