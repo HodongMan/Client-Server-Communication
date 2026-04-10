@@ -7,6 +7,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <functional>
+#include <thread>
+#include <algorithm>
+#include <deque>
 
 
 #include <stdarg.h>

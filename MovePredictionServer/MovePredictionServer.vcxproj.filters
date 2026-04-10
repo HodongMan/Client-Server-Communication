@@ -15,36 +15,18 @@
     <Filter Include="Game">
       <UniqueIdentifier>{66410785-61dc-4ed9-993d-17cec1b3c899}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{af424e00-494a-43af-9b0d-7dd1a0dee5c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Job">
+      <UniqueIdentifier>{accea3b2-6b30-40dc-8ce8-7ea4e15eda11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RIO">
+      <UniqueIdentifier>{c7f805eb-36c9-44a2-aca4-ac544b19098d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="RIOContext.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="RIOManager.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="RIOSession.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="RIOSessionManager.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="RIOWorker.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="RWLock.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeRIO.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Buffer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="PacketHandler.cpp">
@@ -65,36 +47,42 @@
     <ClCompile Include="ServerPacketHandler.cpp">
       <Filter>Packet</Filter>
     </ClCompile>
+    <ClCompile Include="JobSystemWin.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="ConditionVariableSRW.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Buffer.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="RWLock.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOContext.cpp">
+      <Filter>RIO</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOManager.cpp">
+      <Filter>RIO</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOSession.cpp">
+      <Filter>RIO</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOSessionManager.cpp">
+      <Filter>RIO</Filter>
+    </ClCompile>
+    <ClCompile Include="RIOWorker.cpp">
+      <Filter>RIO</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeRIO.cpp">
+      <Filter>RIO</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="RIOContext.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="RIOManager.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="RIOSession.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="RIOSessionManager.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="RIOWorker.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="RWLock.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="TypeRIO.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Buffer.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="PacketHandler.h">
@@ -117,6 +105,39 @@
     </ClInclude>
     <ClInclude Include="ServerPacketHandler.h">
       <Filter>Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="JobSystemWin.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="ConditionVariableSRW.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Buffer.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="RWLock.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOContext.h">
+      <Filter>RIO</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOManager.h">
+      <Filter>RIO</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOSession.h">
+      <Filter>RIO</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOSessionManager.h">
+      <Filter>RIO</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOWorker.h">
+      <Filter>RIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeRIO.h">
+      <Filter>RIO</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

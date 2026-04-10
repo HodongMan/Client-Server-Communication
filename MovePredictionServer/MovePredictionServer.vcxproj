@@ -129,7 +129,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Buffer.cpp" />
+    <ClCompile Include="ConditionVariableSRW.cpp" />
     <ClCompile Include="GameServer.cpp" />
+    <ClCompile Include="JobSystemWin.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
@@ -147,8 +149,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Buffer.h" />
+    <ClInclude Include="ConditionVariableSRW.h" />
     <ClInclude Include="GameServer.h" />
     <ClInclude Include="IdGenerator.h" />
+    <ClInclude Include="JobSystemWin.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="pch.h" />
