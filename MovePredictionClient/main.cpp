@@ -7,6 +7,7 @@
 #include "../MovePrediction/Packet.h"
 #include "../MovePrediction/PacketUtil.h"
 
+#include "Config.h"
 #include "Graphics.h"
 #include "NetworkClient.h"
 #include "ClientPacketDispatcher.h"
@@ -163,9 +164,6 @@ int CALLBACK WinMain( HINSTANCE instance, HINSTANCE /*hInstance*/, LPSTR /*cmdLi
 	ATOM windowClassAtom				= ::RegisterClass( &windowClass );
 	assert( windowClassAtom );
 
-	constexpr int32_t windowWidth		= 1280;
-	constexpr int32_t windowHeight		= 720;
-
 	HWND windowHandle;
 	{
 		LPCSTR windowName				= className;//"Hodong Window";
@@ -176,7 +174,7 @@ int CALLBACK WinMain( HINSTANCE instance, HINSTANCE /*hInstance*/, LPSTR /*cmdLi
 		HMENU menu						= 0;
 		LPVOID param					= nullptr;
 
-		windowHandle					= CreateWindowA( windowClass.lpszClassName, windowName, style, x, y, windowWidth, windowHeight, parentWindow, menu, instance, param );
+		windowHandle					= CreateWindowA( windowClass.lpszClassName, windowName, style, x, y, WINDOW_WIDTH, WINDOW_HEIGHT, parentWindow, menu, instance, param );
 		assert( windowHandle );
 	}
 	
@@ -188,49 +186,42 @@ int CALLBACK WinMain( HINSTANCE instance, HINSTANCE /*hInstance*/, LPSTR /*cmdLi
 	LinearAllocator allocator( megabytes( 64 ) );
 	LinearAllocator tempAllocator( megabytes( 64 ) );
 
-	ClientGlobal* clientGlobal			= ( ClientGlobal* )malloc( sizeof( ClientGlobal ) );
+	ClientGlobal* clientGlobal			= ( ClientGlobal* )allocator.alloc( sizeof( ClientGlobal ) );
 	clientGlobal->_input				= {};
 
 	::SetWindowLongPtr( windowHandle, 0, ( LONG_PTR )clientGlobal );
 
-	GrpahicsState* graphisState			= ( GrpahicsState* )malloc( sizeof( GrpahicsState ) );
+	GrpahicsState* graphisState			= ( GrpahicsState* )allocator.alloc( sizeof( GrpahicsState ) );
 	new( graphisState ) GrpahicsState();
 
-	if ( false == graphisState->initialize( windowHandle, instance, windowWidth, windowHeight, 32, &allocator, &tempAllocator ) )
+	if ( false == graphisState->initialize( windowHandle, instance, WINDOW_WIDTH, WINDOW_HEIGHT, 32, &allocator, &tempAllocator ) )
 	{
 		return false;
 	}
 
-	PlayerSnapshotState* playerSnapshotStates	= ( PlayerSnapshotState* )malloc( sizeof( PlayerSnapshotState ) * MAX_CLIENTS );
-	bool* playersPresent						= ( bool* )malloc( sizeof( bool ) * MAX_CLIENTS );
+	PlayerSnapshotState* playerSnapshotStates	= ( PlayerSnapshotState* )tempAllocator.alloc( sizeof( PlayerSnapshotState ) * MAX_CLIENTS );
+	bool* playersPresent						= ( bool* )tempAllocator.alloc( sizeof( bool ) * MAX_CLIENTS );
 	memset( playersPresent, 0, sizeof( bool ) * MAX_CLIENTS );  // 추가
-	Matrix4x4* mvpMatrices						= ( Matrix4x4* )malloc( sizeof( Matrix4x4 ) * ( MAX_CLIENTS + 1 ) );
+	Matrix4x4* mvpMatrices						= ( Matrix4x4* )tempAllocator.alloc( sizeof( Matrix4x4 ) * ( MAX_CLIENTS + 1 ) );
 
-	PlayerSnapshotState* localPlayerSnapshotState	= ( PlayerSnapshotState* )malloc( sizeof( PlayerSnapshotState ) );
-	PlayerExtraState* localPlayerExtraState		= ( PlayerExtraState* )malloc( sizeof( PlayerExtraState ) );
+	PlayerSnapshotState* localPlayerSnapshotState	= ( PlayerSnapshotState* )tempAllocator.alloc( sizeof( PlayerSnapshotState ) );
+	PlayerExtraState* localPlayerExtraState		= ( PlayerExtraState* )tempAllocator.alloc( sizeof( PlayerExtraState ) );
 
 	*localPlayerSnapshotState					= {};
 	*localPlayerExtraState						= {};
 
-	constexpr int32_t predictionBufferCapacity	= 512;
-	constexpr int32_t predictionBufferMask		= predictionBufferCapacity - 1;
+	constexpr int32_t predictionBufferMask		= PREDICTION_BUFFER_CAPACITY - 1;
 
-	PredictedMove* predictedMove				= ( PredictedMove* )malloc( sizeof( PredictedMove ) * predictionBufferCapacity );
-	PredictedMoveResult* predictedMoveResult	= ( PredictedMoveResult* )malloc( sizeof( PredictedMoveResult ) * predictionBufferCapacity );
+	PredictedMove* predictedMove				= ( PredictedMove* )tempAllocator.alloc( sizeof( PredictedMove ) * PREDICTION_BUFFER_CAPACITY );
+	PredictedMoveResult* predictedMoveResult	= ( PredictedMoveResult* )tempAllocator.alloc( sizeof( PredictedMoveResult ) * PREDICTION_BUFFER_CAPACITY);
 
-	Vector3* playerTargetPositions				= ( Vector3* )malloc( sizeof( Vector3 ) * MAX_CLIENTS );
+	Vector3* playerTargetPositions				= ( Vector3* )tempAllocator.alloc( sizeof( Vector3 ) * MAX_CLIENTS );
 	memset( playerTargetPositions, 0, sizeof( Vector3 ) * MAX_CLIENTS );
 
-	constexpr float fovY						= 60.0f * DegToRad;
-	constexpr float aspectRatio					= windowWidth / ( float )windowHeight;
-	constexpr float nearPlane					= 1.0f;
-	constexpr float farPlane					= 100.0f;
+	constexpr float aspectRatio					= WINDOW_WIDTH / ( float )WINDOW_HEIGHT;
 
 	Matrix4x4 projectionMatrix					= {};
-	projectionMatrix.projection( fovY, aspectRatio, nearPlane, farPlane );
-
-	constexpr int32_t tickRate					= 60;
-	constexpr float secondPerTick				= 1.0f / tickRate;
+	projectionMatrix.projection( FOV_Y, aspectRatio, NEAR_PLANE, FAR_PLANE );
 
 	//int32_t localPlayerSlot						= -1;
 	int32_t localPlayerSlot						= 0;
@@ -334,24 +325,21 @@ int CALLBACK WinMain( HINSTANCE instance, HINSTANCE /*hInstance*/, LPSTR /*cmdLi
 		// tick local player
 		if ( -1 != localPlayerSlot )
 		{
-			constexpr float mouseSensitivity	= 0.003f;
-
 			PlayerInput playerInput				= {};
 			playerInput._left					= clientGlobal->_input._keys[ 'A' ];
 			playerInput._right					= clientGlobal->_input._keys[ 'D' ];
 			playerInput._up						= clientGlobal->_input._keys[ 'W' ];
 			playerInput._down					= clientGlobal->_input._keys[ 'S' ];
 			playerInput._jump					= clientGlobal->_input._keys[ VK_SPACE ];
-			playerInput._pitch					= std::clamp( localPlayerSnapshotState->_pitch - ( mouseDeltaY * mouseSensitivity ), -85.0f * DegToRad, 85.0f * DegToRad );
-			playerInput._yaw					= localPlayerSnapshotState->_yaw + ( mouseDeltaX * mouseSensitivity );
+			playerInput._pitch					= std::clamp( localPlayerSnapshotState->_pitch - ( mouseDeltaY * MOUSE_SENSITIVITY ), -85.0f * DegToRad, 85.0f * DegToRad );
+			playerInput._yaw					= localPlayerSnapshotState->_yaw + ( mouseDeltaX * MOUSE_SENSITIVITY );
 
-			float dt							= secondPerTick;
+			float dt							= SECOND_PER_TICK;
 
 			// ========== 서버에 입력 전송 ==========
 			{
 				static PlayerInput lastSentInput = {};
 				static float sendTimer			= 0.0f;
-				constexpr float SEND_INTERVAL	= 0.1f;  // 100ms
 
 
 				sendTimer						+= dt;
@@ -402,22 +390,19 @@ int CALLBACK WinMain( HINSTANCE instance, HINSTANCE /*hInstance*/, LPSTR /*cmdLi
 			// 서버 보정 보간 player
 			if ( true == clientContext._hasServerTarget )
 			{
-				constexpr float lerpFactor                  = 0.2f;
-    
-				localPlayerSnapshotState->_position._x      += ( clientContext._serverTargetPosition._x - localPlayerSnapshotState->_position._x ) * lerpFactor;
-				localPlayerSnapshotState->_position._y      += ( clientContext._serverTargetPosition._y - localPlayerSnapshotState->_position._y ) * lerpFactor;
-				localPlayerSnapshotState->_position._z      += ( clientContext._serverTargetPosition._z - localPlayerSnapshotState->_position._z ) * lerpFactor;
+				localPlayerSnapshotState->_position._x      += ( clientContext._serverTargetPosition._x - localPlayerSnapshotState->_position._x ) * LEAP_FACTOR;
+				localPlayerSnapshotState->_position._y      += ( clientContext._serverTargetPosition._y - localPlayerSnapshotState->_position._y ) * LEAP_FACTOR;
+				localPlayerSnapshotState->_position._z      += ( clientContext._serverTargetPosition._z - localPlayerSnapshotState->_position._z ) * LEAP_FACTOR;
 			}
 
 			// 다른 플레이어 보간
-			constexpr float otherLerpFactor = 0.2f;
 			for ( int32_t ii = 1; ii < MAX_CLIENTS; ++ii )
 			{
 				if ( true == playersPresent[ ii ] )
 				{
-					playerSnapshotStates[ ii ]._position._x += ( clientContext._playerTargetPositions[ ii]._x - playerSnapshotStates[ ii ]._position._x ) * otherLerpFactor;
-					playerSnapshotStates[ ii ]._position._y += ( clientContext._playerTargetPositions[ ii]._y - playerSnapshotStates[ ii ]._position._y ) * otherLerpFactor;
-					playerSnapshotStates[ ii ]._position._z += ( clientContext._playerTargetPositions[ ii]._z - playerSnapshotStates[ ii ]._position._z ) * otherLerpFactor;
+					playerSnapshotStates[ ii ]._position._x += ( clientContext._playerTargetPositions[ ii]._x - playerSnapshotStates[ ii ]._position._x ) * OTHER_LERP_FACTOR;
+					playerSnapshotStates[ ii ]._position._y += ( clientContext._playerTargetPositions[ ii]._y - playerSnapshotStates[ ii ]._position._y ) * OTHER_LERP_FACTOR;
+					playerSnapshotStates[ ii ]._position._z += ( clientContext._playerTargetPositions[ ii]._z - playerSnapshotStates[ ii ]._position._z ) * OTHER_LERP_FACTOR;
 				}
 			}
 
@@ -485,8 +470,8 @@ int CALLBACK WinMain( HINSTANCE instance, HINSTANCE /*hInstance*/, LPSTR /*cmdLi
 		int32_t numMatrix						= playerMatrix - &mvpMatrices[ 1 ];
 		graphisState->updateAndDraw( mvpMatrices, numMatrix );
 
-		tickTimer.waitUntil( secondPerTick, sleepGranularityWasSet );
-		tickTimer.shiftStart( secondPerTick );
+		tickTimer.waitUntil( SECOND_PER_TICK, sleepGranularityWasSet );
+		tickTimer.shiftStart( SECOND_PER_TICK );
 	}
 
 	return 0;

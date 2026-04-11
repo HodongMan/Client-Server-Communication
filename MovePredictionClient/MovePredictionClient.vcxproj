@@ -133,6 +133,7 @@
     <ClInclude Include="ClientContext.h" />
     <ClInclude Include="ClientPacketDispatcher.h" />
     <ClInclude Include="ClientSocket.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="NetworkClient.h" />
     <ClInclude Include="pch.h" />

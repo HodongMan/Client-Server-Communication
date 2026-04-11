@@ -6,7 +6,6 @@
 
 constexpr uint16_t				PORT					= 5000;
 constexpr int32_t				PACKET_BUDGET_PER_TICK	= 1024;
-constexpr int32_t				MAX_CLIENTS				= 32;
 constexpr int32_t				MAX_CLIENT_TICK_RATE	= 120;
 constexpr int32_t				MAX_SERVER_TOCK_RATE	= 60;
 
