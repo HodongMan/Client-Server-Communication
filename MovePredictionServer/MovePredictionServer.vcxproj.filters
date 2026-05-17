@@ -80,6 +80,12 @@
     <ClCompile Include="TypeRIO.cpp">
       <Filter>RIO</Filter>
     </ClCompile>
+    <ClCompile Include="RIOContextPool.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="SyncContextPool.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -138,6 +144,12 @@
     </ClInclude>
     <ClInclude Include="Logger.h">
       <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="RIOContextPool.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="SyncContextPool.h">
+      <Filter>Job</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

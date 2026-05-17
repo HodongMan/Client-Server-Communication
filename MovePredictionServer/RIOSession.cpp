@@ -4,6 +4,7 @@
 #include "RIOManager.h"
 #include "RIOSessionManager.h"
 #include "GameServer.h"
+#include "SyncContextPool.h"
 
 #include "../MovePrediction/PacketHeader.h"
 
@@ -223,7 +224,7 @@ bool RIOSession::postRecv( void ) noexcept
 		return false;
 	}
 
-	RIOContext* recvContext						= new RIOContext( this, IOType::RECV );
+	RIOContext* recvContext						= _rioManager->getContextPool().acquire( this, IOType::RECV );
 	assert( nullptr != recvContext );
 	
 	recvContext->_buf.BufferId					= _rioBufferId;
@@ -266,7 +267,7 @@ bool RIOSession::postSend( const char* data, DWORD transferred ) noexcept
 		return false;
 	}
 
-	RIOContext* sendContext						= new RIOContext( this, IOType::SEND );
+	RIOContext* sendContext						= _rioManager->getContextPool().acquire( this, IOType::SEND );
 	assert( nullptr != sendContext );
 
 	constexpr int32_t SEND_OFFSET				= SESSION_BUFFER_SIZE / 2;

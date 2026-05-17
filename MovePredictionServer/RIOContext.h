@@ -9,6 +9,7 @@ class RIOSession;
 
 struct RIOContext
 {
+	RIOContext( void ) noexcept = default;
 	RIOContext( RIOSession* session, IOType ioType ) noexcept;
 
 	RIO_BUF								_buf							= {};

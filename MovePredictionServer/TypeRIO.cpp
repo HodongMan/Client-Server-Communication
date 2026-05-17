@@ -3,12 +3,12 @@
 
 #include "RIOContext.h"
 #include "RIOSession.h"
+#include "RIOManager.h"
 
 
 void releaseRIOContext( RIOContext* context ) noexcept
 {
-	assert( nullptr != context );
-	context->_session->releaseReference();
+	HDASSERT( nullptr != context, "Context 정보가 비정상 입니다." );
 
-	delete context;
+	_rioManager->getContextPool().release( context );
 }

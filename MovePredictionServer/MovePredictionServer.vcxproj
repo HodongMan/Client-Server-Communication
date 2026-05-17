@@ -138,6 +138,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerManager.cpp" />
     <ClCompile Include="RIOContext.cpp" />
+    <ClCompile Include="RIOContextPool.cpp" />
     <ClCompile Include="RIOManager.cpp" />
     <ClCompile Include="RIOSession.cpp" />
     <ClCompile Include="RIOSessionManager.cpp" />
@@ -145,6 +146,7 @@
     <ClCompile Include="RWLock.cpp" />
     <ClCompile Include="ServerPacketDispatcher.cpp" />
     <ClCompile Include="ServerPacketHandler.cpp" />
+    <ClCompile Include="SyncContextPool.cpp" />
     <ClCompile Include="TypeRIO.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +161,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerManager.h" />
     <ClInclude Include="RIOContext.h" />
+    <ClInclude Include="RIOContextPool.h" />
     <ClInclude Include="RIOManager.h" />
     <ClInclude Include="RIOSession.h" />
     <ClInclude Include="RIOSessionManager.h" />
@@ -166,6 +169,7 @@
     <ClInclude Include="RWLock.h" />
     <ClInclude Include="ServerPacketDispatcher.h" />
     <ClInclude Include="ServerPacketHandler.h" />
+    <ClInclude Include="SyncContextPool.h" />
     <ClInclude Include="TypeRIO.h" />
   </ItemGroup>
   <ItemGroup>

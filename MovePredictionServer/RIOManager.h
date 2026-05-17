@@ -3,11 +3,16 @@
 
 #include "PacketHandler.h"
 
+#include "RIOContextPool.h"
+#include "SyncContextPool.h"
+
 
 class RIOSession;
 class RIOWorker;
 struct RIOContext;
 
+
+using ServerContextPool								= RIOContextPool< SyncContextPool >;
 
 class RIOManager
 {
@@ -29,6 +34,7 @@ public:
 	void											processConnectionIndex( void ) noexcept;
 
 	PacketDispatcher&								getPacketDispatcher( void ) noexcept;
+	ServerContextPool&								getContextPool( void ) noexcept;
 
 private:
 	void											releaseIOThreads( void ) noexcept;
@@ -48,6 +54,7 @@ private:
 	int32_t											_connectionIndex				= 0;
 
 	PacketDispatcher								_dispatcher						= {};
+	ServerContextPool								_contextPool;
 };
 
 extern RIOManager*									_rioManager;

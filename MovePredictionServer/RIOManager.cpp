@@ -41,6 +41,13 @@ RIOManager::~RIOManager( void ) noexcept
 
 bool RIOManager::initialize( void ) noexcept
 {
+	constexpr int32_t CONTEXT_POOL_CAPACITY				= 1024;
+	if ( false == _contextPool.initialize( CONTEXT_POOL_CAPACITY ) )
+	{
+		HDASSERT( false, "Context Pool 초기화에 실패 했습니다." );
+		return false;
+	}
+
 	// listen socket은 completion port 기능만 사용하더라도 WSA_FLAG_REGISTERED_IO 적용은 필수입니다.
 	// 만약 적용하지 않으면 completion 결과를 받을 수 없음
 	_listenSocket										= ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, 0, WSA_FLAG_REGISTERED_IO | WSA_FLAG_OVERLAPPED );
@@ -184,6 +191,11 @@ void RIOManager::processConnectionIndex( void ) noexcept
 PacketDispatcher& RIOManager::getPacketDispatcher( void ) noexcept
 {
 	return _dispatcher;
+}
+
+ServerContextPool& RIOManager::getContextPool( void ) noexcept
+{
+	return _contextPool;
 }
 
 void RIOManager::releaseIOThreads( void ) noexcept
