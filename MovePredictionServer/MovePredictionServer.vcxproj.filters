@@ -47,9 +47,6 @@
     <ClCompile Include="ServerPacketHandler.cpp">
       <Filter>Packet</Filter>
     </ClCompile>
-    <ClCompile Include="JobSystemWin.cpp">
-      <Filter>Job</Filter>
-    </ClCompile>
     <ClCompile Include="ConditionVariableSRW.cpp">
       <Filter>Util</Filter>
     </ClCompile>
@@ -86,6 +83,15 @@
     <ClCompile Include="SyncContextPool.cpp">
       <Filter>Job</Filter>
     </ClCompile>
+    <ClCompile Include="Job.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="JobWorker.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="JobSystem.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -111,9 +117,6 @@
     </ClInclude>
     <ClInclude Include="ServerPacketHandler.h">
       <Filter>Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="JobSystemWin.h">
-      <Filter>Job</Filter>
     </ClInclude>
     <ClInclude Include="ConditionVariableSRW.h">
       <Filter>Util</Filter>
@@ -149,6 +152,27 @@
       <Filter>Job</Filter>
     </ClInclude>
     <ClInclude Include="SyncContextPool.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeJob.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="Job.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="JobQueue.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="PriorityResource.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="InternalState.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="JobWorker.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="JobSystem.h">
       <Filter>Job</Filter>
     </ClInclude>
   </ItemGroup>

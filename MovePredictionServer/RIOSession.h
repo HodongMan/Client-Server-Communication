@@ -2,6 +2,7 @@
 
 #include "RIOContext.h"
 #include "Buffer.h"
+#include "JobSystem.h"
 
 #include "../MovePrediction/PacketId.h"
 #include "../MovePrediction/RecvBuffer.h"
@@ -54,6 +55,7 @@ public:
 
 private:
 	void										processPacket( const PacketView& packetView ) noexcept;
+	void										processPacketQueue( void ) noexcept;
 
 private:
 
@@ -72,4 +74,11 @@ private:
 	volatile long								_isConnected			= 0;
 
 	GameServer*									_gameServer				= nullptr;
+
+	// packet queue
+	std::deque< Packet >						_packetQueue;
+	RWLock										_packetQueueLock;
+	JobContext									_jobContext;
+
+	bool										_isProcessing			= false;
 };

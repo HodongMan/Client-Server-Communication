@@ -2,38 +2,38 @@
 #include "JobSystemWin.h"
 
 
-InternalStateWin JobSystemWin::_internalState;
+InternalState JobSystem::_internalState;
 
 
-void JobSystemWin::initialize( int32_t maxThreadCount ) noexcept
+void JobSystem::initialize( int32_t maxThreadCount ) noexcept
 {
-	if ( 0 < JobSystemWin::_internalState._numCores )
+	if ( 0 < JobSystem::_internalState._numCores )
 	{
 		return;
 	}
 
 	maxThreadCount						= std::max( 1, maxThreadCount );
 
-	JobSystemWin::_internalState._numCores = std::thread::hardware_concurrency();
+	JobSystem::_internalState._numCores = std::thread::hardware_concurrency();
 
-	for ( int32_t priority = 0; priority < static_cast< int32_t>( JobPriorityWin::Count ); ++priority )
+	for ( int32_t priority = 0; priority < static_cast< int32_t>( JobPriority::Count ); ++priority )
 	{
-		const JobPriorityWin jobPriority= (JobPriorityWin)priority;
-		PriorityResourcesWin& resource	= JobSystemWin::_internalState._resources[ priority ];
+		const JobPriority jobPriority= (JobPriority)priority;
+		PriorityResources& resource	= JobSystem::_internalState._resources[ priority ];
 
 		switch ( jobPriority )
 		{
-		case JobPriorityWin::High:
+		case JobPriority::High:
 			{
-				resource._numThreads	= JobSystemWin::_internalState._numCores - 1;
+				resource._numThreads	= JobSystem::_internalState._numCores - 1;
 			}
 			break;
-		case JobPriorityWin::Low:
+		case JobPriority::Low:
 			{
-				resource._numThreads	= JobSystemWin::_internalState._numCores - 2;
+				resource._numThreads	= JobSystem::_internalState._numCores - 2;
 			}
 			break;
-		case JobPriorityWin::Streaming:
+		case JobPriority::Streaming:
 			{
 				resource._numThreads	= 1;
 			}
@@ -47,33 +47,33 @@ void JobSystemWin::initialize( int32_t maxThreadCount ) noexcept
 
 		resource._numThreads			= std::clamp( resource._numThreads, 1, maxThreadCount );
 		resource._jobQueuePerThread.reset( new JobQueueWin[ resource._numThreads ] );
-		resource._threads.reserve( resource._numThreads );
+		resource._threadHandles.reserve( resource._numThreads );
 
 		for ( int32_t ii = 0; ii < resource._numThreads; ++ii )
 		{
-			std::thread& worker			= resource._threads.emplace_back([ ii, priority, &resource ] 
-			{
-				while ( true == JobSystemWin::_internalState._alives.load() )
-				{
-					resource.work( ii );
+			WorkerThreadParam* param	= new WorkerThreadParam();
+			param->_resources			= &resource;
+			param->_workerIndex			= ii;
+			param->_priority			= jobPriority;
+			param->_numCores			= _internalState._numCores;
 
-					AutoWriteLocker lock( &resource._sleepingMutex );
-					resource._sleepingConditionVariable.sleepConditionVariable();
-				}
-			});
+			unsigned threadId			= 0;
+			HANDLE handle				= ( HANDLE )_beginthreadex( nullptr, 0, workerThreadFunc, param, 0, &threadId );
+			HDASSERT( 0 != handle, "_beginthreadex 처리에 실패 했습니다." );
 
-			std::thread::native_handle_type handle = worker.native_handle();
+			resource._threadHandles.emplace_back( handle );
+
 			int32_t core				= ii + 1;
-			if ( JobPriorityWin::Streaming == jobPriority )
+			if ( JobPriority::Streaming == jobPriority )
 			{
-				core					= JobSystemWin::_internalState._numCores - 1 - ii;
+				core					= _internalState._numCores - 1 - ii;
 			}
 
 			DWORD_PTR affinityMask		= 1ull << core;
 			DWORD_PTR affinityResult	= SetThreadAffinityMask( handle, affinityMask );
 			assert( 0 < affinityResult );
 
-			if ( JobPriorityWin::High == jobPriority )
+			if ( JobPriority::High == jobPriority )
 			{
 				BOOL priorityResult		= SetThreadPriority( handle, THREAD_PRIORITY_NORMAL );
 				assert( TRUE == priorityResult );
@@ -83,7 +83,7 @@ void JobSystemWin::initialize( int32_t maxThreadCount ) noexcept
 				HRESULT hr				= SetThreadDescription( handle, wthrreadname.c_str() );
 				assert( true == SUCCEEDED( hr ) );
 			}
-			else if ( JobPriorityWin::Low == jobPriority )
+			else if ( JobPriority::Low == jobPriority )
 			{
 				BOOL priorityResult		= SetThreadPriority( handle, THREAD_PRIORITY_LOWEST );
 				assert( TRUE == priorityResult );
@@ -93,7 +93,7 @@ void JobSystemWin::initialize( int32_t maxThreadCount ) noexcept
 				HRESULT hr				= SetThreadDescription( handle, wthrreadname.c_str() );
 				assert( true == SUCCEEDED( hr ) );
 			}
-			else if ( JobPriorityWin::Streaming == jobPriority )
+			else if ( JobPriority::Streaming == jobPriority )
 			{
 				BOOL priorityResult		= SetThreadPriority( handle, THREAD_PRIORITY_BELOW_NORMAL );
 				assert( TRUE == priorityResult );
@@ -107,27 +107,28 @@ void JobSystemWin::initialize( int32_t maxThreadCount ) noexcept
 	}
 }
 
-void JobSystemWin::shutdown(void) noexcept
+void JobSystem::shutdown( void ) noexcept
 {
+	_internalState.shutdown();
 }
 
-bool JobSystemWin::isShuttingDown(void) noexcept
+bool JobSystem::isShuttingDown( void ) noexcept
 {
-	return false == JobSystemWin::_internalState._alives.load();
+	return false == JobSystem::_internalState._alives.load();
 }
 
-int32_t JobSystemWin::getThreadCount( JobPriorityWin priority ) noexcept
+int32_t JobSystem::getThreadCount( JobPriority priority ) noexcept
 {
-	return JobSystemWin::_internalState._resources[ static_cast< int32_t>( priority )]._numThreads;
+	return JobSystem::_internalState._resources[ static_cast< int32_t>( priority )]._numThreads;
 }
 
-void JobSystemWin::execute( JobContextWin& context, const std::function< void( JobArgsWin )>& task ) noexcept
+void JobSystem::execute( JobContext& context, const std::function< void( JobArgs )>& task ) noexcept
 {
-	PriorityResourcesWin& resource		= JobSystemWin::_internalState._resources[ static_cast< int32_t>( context._priority ) ];
+	PriorityResources& resource		= JobSystem::_internalState._resources[ static_cast< int32_t>( context._priority ) ];
 
 	context._counter.fetch_add( 1 );
 
-	JobWin job;
+	Job job;
 	job._context						= &context;
 	job._task							= task;
 	job._groupId						= 0;
@@ -145,20 +146,20 @@ void JobSystemWin::execute( JobContextWin& context, const std::function< void( J
 	resource._sleepingConditionVariable.wakeOne();
 }
 
-void JobSystemWin::dispatch( JobContextWin& context, int32_t jobCount, int32_t groupSize, const std::function< void( JobArgsWin )>& task, int32_t sharedMemorySize ) noexcept
+void JobSystem::dispatch( JobContext& context, int32_t jobCount, int32_t groupSize, const std::function< void( JobArgs )>& task, int32_t sharedMemorySize ) noexcept
 {
 	if ( 0 == jobCount )
 	{
 		return;
 	}
 
-	PriorityResourcesWin& resource		= JobSystemWin::_internalState._resources[ static_cast< int32_t>( context._priority ) ];
+	PriorityResources& resource			= JobSystem::_internalState._resources[ static_cast< int32_t>( context._priority ) ];
 	
 	const int32_t groupCount			= dispatchGroupCount( jobCount, groupSize );
 
 	context._counter.fetch_add( groupCount );
 
-	JobWin job;
+	Job job;
 	job._context						= &context;
 	job._task							= task;
 	job._sharedMemorySize				= sharedMemorySize;
@@ -185,25 +186,25 @@ void JobSystemWin::dispatch( JobContextWin& context, int32_t jobCount, int32_t g
 	}
 }
 
-int32_t JobSystemWin::dispatchGroupCount( int32_t jobCount, int32_t groupSize ) noexcept
+int32_t JobSystem::dispatchGroupCount( int32_t jobCount, int32_t groupSize ) noexcept
 {
 	return ( jobCount + groupSize - 1 ) / groupSize;
 }
 
-bool JobSystemWin::isBusy( const JobContextWin& context ) noexcept
+bool JobSystem::isBusy( const JobContext& context ) noexcept
 {
 	return 0 < context._counter.load();
 }
 
-void JobSystemWin::wait( const JobContextWin& context ) noexcept
+void JobSystem::wait( const JobContext& context ) noexcept
 {
 	if ( true == isBusy( context ) )
 	{
-		PriorityResourcesWin& resource	= JobSystemWin::_internalState._resources[ static_cast< int32_t>( context._priority ) ];
+		PriorityResources& resource		= JobSystem::_internalState._resources[ static_cast< int32_t>( context._priority ) ];
 		resource._sleepingConditionVariable.wakeAll();
 		resource.work( resource._nextQueue.fetch_add( 1 ) % resource._numThreads );
 
-		AutoWriteLocker lock( &resource._waitingMutex );
+		AutoWriteLocker lock( &resource._waitingLock );
 
 		while ( true == isBusy( context ) )
 		{
@@ -212,7 +213,7 @@ void JobSystemWin::wait( const JobContextWin& context ) noexcept
 	}
 }
 
-int32_t JobSystemWin::getRemainingJobCount( const JobContextWin& context ) noexcept
+int32_t JobSystem::getRemainingJobCount( const JobContext& context ) noexcept
 {
 	return context._counter.load();
 }

@@ -2,6 +2,7 @@
 #include "RIOSessionManager.h"
 #include "RIOManager.h"
 #include "GameServer.h"
+#include "JobSystem.h"
 
 
 int main( void )
@@ -11,6 +12,8 @@ int main( void )
 	_sessionManager							= new RIOSessionManager();
 	_rioManager								= new RIOManager();
 
+	JobSystem::initialize();
+	
 	GameServer* gameServer					= new GameServer();
 
 	ServerPacketDispatcher& dispatcher		= gameServer->getPacketDispatcher();
@@ -36,6 +39,8 @@ int main( void )
 	{
 		return 0;
 	}
+
+	JobSystem::shutdown();
 
 	return 0;
 }

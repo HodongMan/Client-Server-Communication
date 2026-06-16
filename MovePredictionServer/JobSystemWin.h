@@ -4,12 +4,13 @@
 #include "ConditionVariableSRW.h"
 
 
-struct InternalStateWin;
+struct InternalState;
+struct PriorityResources;
 
 
 // 스레드 우선순위와 관련이 있음
 // Straming은 Main Thread에서 직접 처리
-enum class JobPriorityWin
+enum class JobPriority
 {
 	High,
 	Low,
@@ -17,8 +18,16 @@ enum class JobPriorityWin
 	Count,
 };
 
+struct WorkerThreadParam
+{
+	PriorityResources*			_resources				= nullptr;
+	int32_t						_workerIndex			= 0;
+	JobPriority					_priority				= JobPriority::Count;
+	int32_t						_numCores				= 0;
+};
 
-struct JobArgsWin
+
+struct JobArgs
 {
 	int32_t						_jobIndex				= 0;
 	int32_t						_groupId				= 0;
@@ -29,16 +38,16 @@ struct JobArgsWin
 	bool						_isLastJobInGroup		= false;
 };
 
-struct JobContextWin
+struct JobContext
 {
 	std::atomic< int32_t >		_counter{ 0 };
-	JobPriorityWin				_priority				= JobPriorityWin::High;
+	JobPriority				_priority				= JobPriority::High;
 };
 
-struct JobWin
+struct Job
 {
-	std::function< void( JobArgsWin ) >	_task;
-	JobContextWin*				_context				= nullptr;
+	std::function< void( JobArgs ) >	_task;
+	JobContext*				_context				= nullptr;
 
 	int32_t						_groupId				= 0;
 	int32_t						_groupJobOffset			= 0;
@@ -49,7 +58,7 @@ struct JobWin
 	{
 		constexpr int32_t		MAX_SHARED_MEMORY		= 4096;
 
-		JobArgsWin args;
+		JobArgs args;
 		args._groupId			= _groupId;
 		if ( 0 < _sharedMemorySize && _sharedMemorySize < MAX_SHARED_MEMORY )
 		{
@@ -88,17 +97,17 @@ struct JobWin
 
 struct JobQueueWin
 {
-	std::deque< JobWin >		_queue;
+	std::deque< Job >		_queue;
 	RWLock						_locker;
 
-	inline void					push( const JobWin& item ) noexcept
+	inline void					push( const Job& item ) noexcept
 	{
 		AutoWriteLocker locker( &_locker );
 
 		_queue.push_back( item );
 	}
 
-	inline bool					pop( _Out_ JobWin& item ) noexcept
+	inline bool					pop( _Out_ Job& item ) noexcept
 	{
 		AutoWriteLocker locker( &_locker );
 
@@ -112,24 +121,31 @@ struct JobQueueWin
 
 		return true;
 	}
+
+	inline bool					empty( void ) noexcept
+	{
+		AutoReadLocker locker( &_locker );
+
+		return _queue.empty();
+	}
 };
 
-struct PriorityResourcesWin
+struct PriorityResources
 {
 	int32_t						_numThreads					= 0;
-	std::vector< std::thread >	_threads;
+	std::vector< HANDLE >		_threadHandles;
 	std::unique_ptr< JobQueueWin[] >	_jobQueuePerThread;
 	std::atomic< int32_t >		_nextQueue{ 0 };
 
 	ConditionVariableSRW		_sleepingConditionVariable;
-	RWLock						_sleepingMutex;
+	RWLock						_sleepingLock;
 
 	ConditionVariableSRW		_waitingCondition;
-	RWLock						_waitingMutex;
+	RWLock						_waitingLock;
 
-	PriorityResourcesWin( void ) noexcept
-		: _waitingCondition( &_waitingMutex )
-		, _sleepingConditionVariable( &_sleepingMutex )
+	PriorityResources( void ) noexcept
+		: _waitingCondition( &_waitingLock )
+		, _sleepingConditionVariable( &_sleepingLock )
 	{
 		
 	}
@@ -138,7 +154,7 @@ struct PriorityResourcesWin
 	// 나머지 할 거 있으면 처리
 	inline void					work( int32_t startingQueue ) noexcept
 	{
-		JobWin job;
+		Job job;
 		for ( int32_t ii = 0; ii < _numThreads; ++ii )
 		{
 			JobQueueWin& jobQueue	= _jobQueuePerThread[ startingQueue % _numThreads ];
@@ -147,7 +163,7 @@ struct PriorityResourcesWin
 				int32_t progressBefore	= job.execute();
 				if ( 1 == progressBefore )
 				{
-					AutoWriteLocker lock( &_waitingMutex );
+					AutoWriteLocker lock( &_waitingLock );
 					_waitingCondition.wakeAll();
 				}
 			}
@@ -158,7 +174,7 @@ struct PriorityResourcesWin
 };
 
 
-class JobSystemWin
+class JobSystem
 {
 public:
 	static void					initialize( int32_t maxThreadCount = 0 ) noexcept;
@@ -166,30 +182,30 @@ public:
 
 	static bool					isShuttingDown( void ) noexcept;
 
-	static int32_t				getThreadCount( JobPriorityWin priority ) noexcept;
+	static int32_t				getThreadCount( JobPriority priority ) noexcept;
 
-	static void					execute( JobContextWin& context, const std::function< void( JobArgsWin ) >& task ) noexcept;
-	static void					dispatch( JobContextWin& context, int32_t jobCount, int32_t groupSize, const std::function< void( JobArgsWin ) >& task, int32_t sharedMemorySize = 0  ) noexcept;
+	static void					execute( JobContext& context, const std::function< void( JobArgs ) >& task ) noexcept;
+	static void					dispatch( JobContext& context, int32_t jobCount, int32_t groupSize, const std::function< void( JobArgs ) >& task, int32_t sharedMemorySize = 0  ) noexcept;
 
 	static int32_t				dispatchGroupCount( int32_t jobCount, int32_t groupSize ) noexcept;
 
-	static bool					isBusy( const JobContextWin& context ) noexcept;
-	static void					wait( const JobContextWin& context ) noexcept;
+	static bool					isBusy( const JobContext& context ) noexcept;
+	static void					wait( const JobContext& context ) noexcept;
 
-	static int32_t				getRemainingJobCount( const JobContextWin& context ) noexcept;
+	static int32_t				getRemainingJobCount( const JobContext& context ) noexcept;
 
-	static InternalStateWin		_internalState;
+	static InternalState		_internalState;
 };
 
-struct InternalStateWin
+struct InternalState
 {
 	int32_t						_numCores						= 0;
-	PriorityResourcesWin		_resources[ int32_t( JobPriorityWin::Count ) ];
+	PriorityResources			_resources[ int32_t( JobPriority::Count ) ];
 	std::atomic_bool			_alives{ true };
 
 	void						shutdown( void ) noexcept
 	{
-		if ( true == JobSystemWin::isShuttingDown() )
+		if ( true == JobSystem::isShuttingDown() )
 		{
 			return;
 		}
@@ -200,36 +216,74 @@ struct InternalStateWin
 		{
 			while ( true == wakeLoop )
 			{
-				for ( PriorityResourcesWin& resource : _resources )
+				for ( PriorityResources& resource : _resources )
 				{
 					resource._sleepingConditionVariable.wakeAll();
 				}
 			}
 		});
 
-		for (PriorityResourcesWin& resource : _resources )
+		for ( PriorityResources& resource : _resources )
 		{
-			for ( std::thread& thread : resource._threads )
+			if ( false == resource._threadHandles.empty() )
 			{
-				thread.join();
+				::WaitForMultipleObjects( ( DWORD )resource._threadHandles.size(), resource._threadHandles.data(), TRUE, INFINITE );
+
+				for ( HANDLE handle : resource._threadHandles )
+				{
+					::CloseHandle( handle );
+				}
 			}
 		}
 
 		wakeLoop				= false;
 		waker.join();
 
-		for (PriorityResourcesWin& resource : _resources )
+		for ( PriorityResources& resource : _resources )
 		{
 			resource._jobQueuePerThread.reset();
-			resource._threads.clear();
+			resource._threadHandles.clear();
 			resource._numThreads	= 0;
 		}
 
 		_numCores				= 0;
 	}
 
-	~InternalStateWin( void ) noexcept
+	~InternalState( void ) noexcept
 	{
 		shutdown();
 	}
 };
+
+static unsigned __stdcall workerThreadFunc( void* arg ) noexcept
+{
+	WorkerThreadParam* param	= static_cast< WorkerThreadParam* >( arg );
+	PriorityResources& resource	= *param->_resources;
+
+	const int32_t workerIndex	= param->_workerIndex;
+
+	while ( JobSystem::_internalState._alives.load() )
+	{
+		resource.work( workerIndex );
+
+		AutoWriteLocker lock( &resource._sleepingLock );
+
+		bool hasJob				= false;
+		for ( int32_t jj = 0; jj < resource._numThreads; ++jj )
+		{
+			if ( false == resource._jobQueuePerThread[ jj ].empty() )
+			{
+				hasJob			= true;
+				break;
+			}
+		}
+
+		if ( false == hasJob )
+		{
+			resource._sleepingConditionVariable.sleepConditionVariable();
+		}
+	}
+
+	delete param;
+	return 0;
+}

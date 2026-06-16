@@ -50,7 +50,47 @@ void RIOSession::processPacket( const PacketView& packetView ) noexcept
 	packet._id										= packetView._id;
 	packet._data.assign( packetView._data + PACKET_HEADER_SIZE, packetView._data + packetView._size );
 
-	_gameServer->getPacketDispatcher().dispatch( this, packet );
+	// queue¿¡ ³Ö±â
+	bool shouldStartProcessing						= false;
+	
+	{
+		AutoWriteLocker locker( &_packetQueueLock );
+		_packetQueue.push_back( std::move( packet ) );
+
+		if ( false == _isProcessing )
+		{
+			_isProcessing							= true;
+			shouldStartProcessing					= true;
+		}
+	}
+
+	if ( true == shouldStartProcessing )
+	{
+		addReference();
+		JobSystem::execute( _jobContext, [ this ]( JobArgs ) { processPacketQueue(); releaseReference(); } );
+	}
+}
+
+void RIOSession::processPacketQueue( void ) noexcept
+{
+	while ( true )
+	{
+		Packet packet								= {};
+		
+		{
+			AutoWriteLocker locker( &_packetQueueLock );
+			if ( true == _packetQueue.empty() )
+			{
+				_isProcessing						= false;
+				return;
+			}
+
+			packet									= std::move( _packetQueue.front() );
+			_packetQueue.pop_front();
+		}
+
+		_gameServer->getPacketDispatcher().dispatch( this, packet );
+	}
 }
 
 bool RIOSession::isConnected( void ) const noexcept

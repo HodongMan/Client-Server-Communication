@@ -41,7 +41,7 @@ RIOManager::~RIOManager( void ) noexcept
 
 bool RIOManager::initialize( void ) noexcept
 {
-	constexpr int32_t CONTEXT_POOL_CAPACITY				= 1024;
+	constexpr int32_t CONTEXT_POOL_CAPACITY				= 16384;
 	if ( false == _contextPool.initialize( CONTEXT_POOL_CAPACITY ) )
 	{
 		HDASSERT( false, "Context Pool 초기화에 실패 했습니다." );
