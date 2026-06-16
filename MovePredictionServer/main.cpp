@@ -12,9 +12,8 @@ int main( void )
 	_sessionManager							= new RIOSessionManager();
 	_rioManager								= new RIOManager();
 
-	JobSystem::initialize();
-	
 	GameServer* gameServer					= new GameServer();
+	gameServer->getJobSystem().initialize();
 
 	ServerPacketDispatcher& dispatcher		= gameServer->getPacketDispatcher();
 	dispatcher.setContext( gameServer );
@@ -40,7 +39,7 @@ int main( void )
 		return 0;
 	}
 
-	JobSystem::shutdown();
+	gameServer->getJobSystem().shutdown();
 
 	return 0;
 }

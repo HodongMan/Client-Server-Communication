@@ -21,3 +21,8 @@ ServerPacketDispatcher& GameServer::getPacketDispatcher( void ) noexcept
 {
 	return _dispatcher;
 }
+
+JobSystem& GameServer::getJobSystem( void ) noexcept
+{
+	return _jobSystem;
+}

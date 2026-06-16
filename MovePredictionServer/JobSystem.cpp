@@ -2,9 +2,6 @@
 #include "JobSystem.h"
 
 
-InternalState JobSystem::_internalState;
-
-
 struct PriorityConfig
 {
 	int32_t									_threadCountOffset			= 0;
@@ -54,8 +51,9 @@ int32_t calculateCoreIndex( JobPriority priority, int32_t workerIndex, int32_t n
 	return workerIndex + 1;
 }
 
-void createWorker( PriorityResources& resource, JobPriority priority, int32_t workerIndex, int32_t numCores ) noexcept
+void createWorker( JobSystem* jobSystem, PriorityResources& resource, JobPriority priority, int32_t workerIndex, int32_t numCores ) noexcept
 {
+	HDASSERT( nullptr != jobSystem, "JobSystem이 비정상 입니다." );
 	HDASSERT( priority != JobPriority::COUNT, "Job Priority값이 비정상 입니다." );
 	HDASSERT( 0 <= workerIndex, "workerIndex 값이 비정상 입니다." );
 	HDASSERT( 0 < numCores, "Core 값이 비정상 입니다." );
@@ -65,6 +63,7 @@ void createWorker( PriorityResources& resource, JobPriority priority, int32_t wo
 	param->_workerIndex						= workerIndex;
 	param->_priority						= priority;
 	param->_numCores						= numCores;
+	param->_jobSystem						= jobSystem;
 
 	unsigned threadId						= 0;
 	HANDLE handle							= ( HANDLE )::_beginthreadex( nullptr, 0, workerThreadFunc, param, 0, &threadId );
@@ -84,6 +83,11 @@ void createWorker( PriorityResources& resource, JobPriority priority, int32_t wo
 	std::wstring threadName					= config._namePrefix + std::to_wstring( workerIndex );
 	HRESULT hr								= ::SetThreadDescription( handle, threadName.c_str() );
 	HDASSERT( true == SUCCEEDED( hr ),  "SetThreadDescription이 실패 했습니다." );
+}
+
+JobSystem::~JobSystem( void ) noexcept
+{
+	_internalState.shutdown( this );
 }
 
 void JobSystem::initialize( int32_t maxThreadCount ) noexcept
@@ -110,14 +114,14 @@ void JobSystem::initialize( int32_t maxThreadCount ) noexcept
 
 		for ( int32_t ii = 0; ii < resource._numThreads; ++ii )
 		{
-			createWorker( resource, jobPriority, ii, numCores );
+			createWorker( this, resource, jobPriority, ii, numCores );
 		}
 	}
 }
 
 void JobSystem::shutdown( void ) noexcept
 {
-	_internalState.shutdown();
+	_internalState.shutdown( this );
 }
 
 bool JobSystem::isShuttingDown( void ) noexcept
@@ -232,9 +236,11 @@ int32_t JobSystem::getRemainingJobCount( const JobContext& context ) noexcept
 	return context._counter.load();
 }
 
-void InternalState::shutdown( void ) noexcept
+void InternalState::shutdown( JobSystem* owner ) noexcept
 {
-	if ( true == JobSystem::isShuttingDown() )
+	HDASSERT( nullptr != owner, "JobSystem값이 비정상 입니다." );
+
+	if ( true == owner->isShuttingDown() )
 	{
 		return;
 	}

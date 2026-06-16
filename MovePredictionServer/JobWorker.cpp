@@ -9,10 +9,11 @@ unsigned __stdcall workerThreadFunc( void* arg ) noexcept
 {
 	WorkerThreadParam* param			= static_cast< WorkerThreadParam* >( arg );
 	PriorityResources& resource			= *param->_resources;
+	JobSystem& jobSystem				= *param->_jobSystem;
 
 	const int32_t workerIndex			= param->_workerIndex;
 
-	while ( JobSystem::_internalState._alives.load() )
+	while ( jobSystem._internalState._alives.load() )
 	{
 		resource.work( workerIndex );
 

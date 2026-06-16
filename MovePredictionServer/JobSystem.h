@@ -12,22 +12,26 @@
 class JobSystem
 {
 public:
-	static void							initialize( int32_t maxThreadCount = 0 ) noexcept;
-	static void							shutdown( void ) noexcept;
+	JobSystem( void ) noexcept = default;
+	~JobSystem( void ) noexcept;
 
-	static bool							isShuttingDown( void ) noexcept;
+	void							initialize( int32_t maxThreadCount = 0 ) noexcept;
+	void							shutdown( void ) noexcept;
 
-	static int32_t						getThreadCount( JobPriority priority ) noexcept;
+	bool							isShuttingDown( void ) noexcept;
 
-	static void							execute( JobContext& context, const std::function< void( JobArgs ) >& task ) noexcept;
-	static void							dispatch( JobContext& context, int32_t jobCount, int32_t groupSize, const std::function< void( JobArgs ) >& task, int32_t sharedMemorySize = 0  ) noexcept;
+	int32_t							getThreadCount( JobPriority priority ) noexcept;
 
-	static int32_t						dispatchGroupCount( int32_t jobCount, int32_t groupSize ) noexcept;
+	void							execute( JobContext& context, const std::function< void( JobArgs ) >& task ) noexcept;
+	void							dispatch( JobContext& context, int32_t jobCount, int32_t groupSize, const std::function< void( JobArgs ) >& task, int32_t sharedMemorySize = 0  ) noexcept;
 
-	static bool							isBusy( const JobContext& context ) noexcept;
-	static void							wait( const JobContext& context ) noexcept;
+	int32_t							dispatchGroupCount( int32_t jobCount, int32_t groupSize ) noexcept;
 
-	static int32_t						getRemainingJobCount( const JobContext& context ) noexcept;
+	bool							isBusy( const JobContext& context ) noexcept;
+	void							wait( const JobContext& context ) noexcept;
 
-	static InternalState				_internalState;
+	int32_t							getRemainingJobCount( const JobContext& context ) noexcept;
+
+public:
+	InternalState					_internalState;
 };

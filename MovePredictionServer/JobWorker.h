@@ -5,10 +5,12 @@
 
 
 struct PriorityResources;
+class JobSystem;
 
 
 struct WorkerThreadParam
 {
+	JobSystem*							_jobSystem				= nullptr;
 	PriorityResources*					_resources				= nullptr;
 	int32_t								_workerIndex			= 0;
 	JobPriority							_priority				= JobPriority::COUNT;

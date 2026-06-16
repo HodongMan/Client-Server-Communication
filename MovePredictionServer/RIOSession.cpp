@@ -67,7 +67,7 @@ void RIOSession::processPacket( const PacketView& packetView ) noexcept
 	if ( true == shouldStartProcessing )
 	{
 		addReference();
-		JobSystem::execute( _jobContext, [ this ]( JobArgs ) { processPacketQueue(); releaseReference(); } );
+		_gameServer->getJobSystem().execute( _jobContext, [ this ]( JobArgs ) { processPacketQueue(); releaseReference(); } );
 	}
 }
 
