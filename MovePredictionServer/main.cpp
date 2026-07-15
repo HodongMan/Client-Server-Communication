@@ -13,7 +13,7 @@ int main( void )
 	_rioManager								= new RIOManager();
 
 	GameServer* gameServer					= new GameServer();
-	gameServer->getJobSystem().initialize();
+	gameServer->getJobSystem().initialize( 4 );
 
 	ServerPacketDispatcher& dispatcher		= gameServer->getPacketDispatcher();
 	dispatcher.setContext( gameServer );

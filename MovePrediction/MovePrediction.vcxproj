@@ -126,7 +126,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Assert.h" />
+    <ClInclude Include="AST.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="Lexer.h" />
     <ClInclude Include="LinearAllocator.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Math.h" />
@@ -136,19 +138,25 @@
     <ClInclude Include="CommonPch.h" />
     <ClInclude Include="PacketId.h" />
     <ClInclude Include="PacketUtil.h" />
+    <ClInclude Include="Parser.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="RecvBuffer.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="Token.h" />
     <ClInclude Include="TypePacket.h" />
+    <ClInclude Include="TypeRegistry.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assert.cpp" />
+    <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="LinearAllocator.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Math.cpp" />
+    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="RecvBuffer.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="TypeRegistry.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
