@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <sstream>
 
 #include <stdarg.h>
 #include <cstdlib>

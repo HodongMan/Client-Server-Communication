@@ -77,6 +77,9 @@
     <ClInclude Include="Parser.h">
       <Filter>IDL</Filter>
     </ClInclude>
+    <ClInclude Include="CodeGenerator.h">
+      <Filter>IDL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Timer.cpp">
@@ -107,6 +110,9 @@
       <Filter>IDL</Filter>
     </ClCompile>
     <ClCompile Include="Parser.cpp">
+      <Filter>IDL</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeGenerator.cpp">
       <Filter>IDL</Filter>
     </ClCompile>
   </ItemGroup>
